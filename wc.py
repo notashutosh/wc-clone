@@ -1,8 +1,26 @@
 import argparse
+import os
 
 
 def count_file(filepath: str):
-    pass
+    with open(filepath, 'r') as file:
+        max_line_length = 0
+        line_count = 0
+        multibyte_char_count = 0
+        word_count = 0
+        word_count = 0
+        for line in file.readlines():
+            line = line.strip()
+            line_count += 1
+            multibyte_char_count += len(line)
+            word_count += len(line.split())
+            if l := len(line) > max_line_length:
+                max_line_length = l
+
+        print(f'line count {line_count}')
+        print(f'multibyte_char_count {multibyte_char_count}')
+        print(f'char_count {os.path.getsize(filepath)}')
+        print(f'word_count {word_count}')
 
 
 if __name__ == '__main__':
