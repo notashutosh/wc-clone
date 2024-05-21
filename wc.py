@@ -2,7 +2,7 @@ import argparse
 import os
 
 
-def count_file(filepath: str):
+def count_file(filepath: str, multi_byte=False):
     with open(filepath, 'r') as file:
         max_line_length = 0
         line_count = 0
@@ -17,10 +17,11 @@ def count_file(filepath: str):
             if l := len(line) > max_line_length:
                 max_line_length = l
 
-        print(f'line count {line_count}')
-        print(f'multibyte_char_count {multibyte_char_count}')
-        print(f'char_count {os.path.getsize(filepath)}')
-        print(f'word_count {word_count}')
+        return {
+            'line_count': line_count,
+            'word_count': word_count,
+            'char_count': multibyte_char_count if multi_byte else os.path.getsize(filepath),
+        }
 
 
 if __name__ == '__main__':
@@ -31,17 +32,22 @@ if __name__ == '__main__':
     )
 
     parser.add_argument('filename')
-    parser.add_argument('-L',
-                        help='Write the length of the line containing the most bytes (default) or characters (when -m is provided) to standard output.')
     parser.add_argument('-c',
-                        help='The number of bytes in the input file is written to the standard output.')
+                        help='The number of bytes in the input file is written to the standard output.', action='store_true')
     parser.add_argument('-l',
-                        help='The number of lines in the input file is written to the standard output.')
+                        help='The number of lines in the input file is written to the standard output.', action='store_true')
     parser.add_argument('-m',
-                        help='The number of characters in each input file is written to the standard output.  If the current locale does not support multibyte characters, this is equivalent to the -c option.')
+                        help='The number of characters in each input file is written to the standard output.  If the current locale does not support multibyte characters, this is equivalent to the -c option.', action='store_true')
     parser.add_argument('-w',
-                        help='The number of words in each input file is written to the standard output.')
+                        help='The number of words in each input file is written to the standard output.', action='store_true')
 
     args = vars(parser.parse_args())
-
-    count_file(args['filename'])
+    counts = count_file(args['filename'], args['m'])
+    # If all argument switches are false, then display standard info
+    if len(list(filter(lambda i: False if i[0] == 'filename' else i[1] if i[1] == True else False, args.items()))) == 0:
+        print(
+            f"{counts['line_count']}\t{counts['word_count']}\t{counts['char_count']}\t{args['filename']}")
+    else:
+        # display only data that's requested
+        print(
+            f"{str(counts['line_count']) + "\t" if args['l'] is True else ''}{str(counts['word_count']) + "\t" if args['w'] is True else ''}{str(counts['char_count']) + "\t" if args['c'] is True else ''}{args['filename']}")
